@@ -1,15 +1,16 @@
-import { Component } from '@angular/core';
-import { MenuItem } from 'primeng/api';
+import { Component, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { StyleClassModule } from 'primeng/styleclass';
+import { AvatarModule } from 'primeng/avatar';
 import { AppConfigurator } from './app.configurator';
 import { LayoutService } from '../service/layout.service';
+import { AuthFacade } from '../../data-access/auth/auth.facade';
 
 @Component({
     selector: 'app-topbar',
     standalone: true,
-    imports: [RouterModule, CommonModule, StyleClassModule, AppConfigurator],
+    imports: [RouterModule, CommonModule, StyleClassModule, AvatarModule, AppConfigurator],
     template: ` <div class="layout-topbar">
         <div class="layout-topbar-logo-container">
             <button class="layout-menu-button layout-topbar-action" (click)="layoutService.onMenuToggle()">
@@ -42,7 +43,7 @@ import { LayoutService } from '../service/layout.service';
                 <button type="button" class="layout-topbar-action" (click)="toggleDarkMode()">
                     <i [ngClass]="{ 'pi ': true, 'pi-moon': layoutService.isDarkTheme(), 'pi-sun': !layoutService.isDarkTheme() }"></i>
                 </button>
-                <div class="relative">
+                <div class="relative hidden">
                     <button
                         class="layout-topbar-action layout-topbar-action-highlight"
                         pStyleClass="@next"
@@ -64,29 +65,54 @@ import { LayoutService } from '../service/layout.service';
 
             <div class="layout-topbar-menu hidden lg:block">
                 <div class="layout-topbar-menu-content">
-                    <button type="button" class="layout-topbar-action">
-                        <i class="pi pi-calendar"></i>
-                        <span>Calendar</span>
-                    </button>
-                    <button type="button" class="layout-topbar-action">
-                        <i class="pi pi-inbox"></i>
-                        <span>Messages</span>
-                    </button>
-                    <button type="button" class="layout-topbar-action">
-                        <i class="pi pi-user"></i>
-                        <span>Profile</span>
-                    </button>
+                    @if (currentUser()) {
+                        <button type="button" class="layout-topbar-action" routerLink="/pages/profile">
+                            @if (currentUser()?.avatarUrl) {
+                                <img [src]="currentUser()?.avatarUrl" alt="Avatar" class="w-8 h-8 rounded-full object-cover" />
+                            } @else {
+                                <p-avatar [label]="getInitials()" shape="circle" />
+                            }
+                            <span>{{ currentUser()?.userName }}</span>
+                        </button>
+                        <button type="button" class="layout-topbar-action" (click)="onLogout()">
+                            <i class="pi pi-sign-out"></i>
+                            <span>Logout</span>
+                        </button>
+                    } @else {
+                        <button type="button" class="layout-topbar-action" routerLink="/auth/login">
+                            <i class="pi pi-sign-in"></i>
+                            <span>Login</span>
+                        </button>
+                    }
                 </div>
             </div>
         </div>
     </div>`
 })
 export class AppTopbar {
-    items!: MenuItem[];
+    private authFacade = inject(AuthFacade);
+    public layoutService = inject(LayoutService);
 
-    constructor(public layoutService: LayoutService) {}
+    currentUser = this.authFacade.currentUser;
+    isAuthenticated = this.authFacade.isAuthenticated;
+
+    getInitials(): string {
+        const user = this.currentUser();
+        if (!user) return '?';
+        const name = user.fullName || user.userName;
+        return name
+            .split(' ')
+            .map((n) => n[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2);
+    }
 
     toggleDarkMode() {
         this.layoutService.layoutConfig.update((state) => ({ ...state, darkTheme: !state.darkTheme }));
+    }
+
+    onLogout() {
+        this.authFacade.logout();
     }
 }

@@ -1,0 +1,105 @@
+<p-toast />
+<p-card>
+    <div class="flex flex-col gap-6">
+        <!-- Header -->
+        <div>
+            <h2 class="text-xl font-semibold m-0">Thông tin cá nhân</h2>
+        </div>
+
+        <!-- Avatar Section - Centered -->
+        <div class="flex flex-col items-center gap-4">
+            <div class="relative cursor-pointer group" (click)="fileInput.click()">
+                @if (currentUser()?.avatarUrl) {
+                    <img [src]="currentUser()?.avatarUrl" alt="Avatar" class="rounded-full object-cover border-4 border-primary" style="width: 120px; height: 120px" />
+                } @else {
+                    <p-avatar [label]="getInitials()" shape="circle" [style]="{ width: '120px', height: '120px', fontSize: '4rem' }" />
+                }
+                <!-- Overlay on hover -->
+                <div class="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <i class="pi pi-camera text-white text-2xl"></i>
+                </div>
+            </div>
+            <input #fileInput type="file" accept="image/*" class="hidden" (change)="onFileChange($event)" />
+            <span class="text-surface-500 text-sm">Click vào ảnh để thay đổi avatar</span>
+        </div>
+
+        <!-- User Profile Section -->
+        <form [formGroup]="profileForm" (ngSubmit)="onSaveProfile()">
+            <div class="flex flex-col gap-4">
+                <span class="font-medium text-surface-700 dark:text-surface-200">User Profile</span>
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="flex-1">
+                        <label for="userName" class="block text-surface-600 dark:text-surface-300 text-sm mb-2">Username</label>
+                        <input pInputText id="userName" formControlName="userName" class="w-full" />
+                    </div>
+                    <div class="flex-1">
+                        <label for="email" class="block text-surface-600 dark:text-surface-300 text-sm mb-2">Email</label>
+                        <input pInputText id="email" formControlName="email" class="w-full" />
+                    </div>
+                    <div class="flex-1">
+                        <label for="fullName" class="block text-surface-600 dark:text-surface-300 text-sm mb-2">Full Name</label>
+                        <input pInputText id="fullName" formControlName="fullName" class="w-full" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Password Section -->
+            <div class="flex flex-col gap-2 mt-6">
+                <span class="font-medium text-surface-700 dark:text-surface-200">Password</span>
+                <div class="mt-2">
+                    <p-button label="Set new password" [outlined]="true" severity="secondary" (onClick)="togglePasswordForm()" [icon]="showPasswordForm() ? 'pi pi-chevron-up' : 'pi pi-chevron-down'" iconPos="right" />
+                </div>
+
+                <!-- Change Password Form -->
+                @if (showPasswordForm()) {
+                    <div class="mt-4 p-4 border border-surface-200 dark:border-surface-700 rounded-lg" formGroupName="password">
+                        <div class="flex flex-col gap-4">
+                            <div>
+                                <label for="currentPassword" class="block text-surface-600 dark:text-surface-300 text-sm mb-2">Current Password</label>
+                                <p-password id="currentPassword" formControlName="currentPassword" placeholder="Enter current password" [toggleMask]="true" [fluid]="true" [feedback]="false" />
+                                @if (passwordGroup.get('currentPassword')?.invalid && passwordGroup.get('currentPassword')?.touched) {
+                                    <small class="text-red-500">Current password is required</small>
+                                }
+                            </div>
+
+                            <div>
+                                <label for="newPassword" class="block text-surface-600 dark:text-surface-300 text-sm mb-2">New Password</label>
+                                <p-password id="newPassword" formControlName="newPassword" placeholder="Enter new password" [toggleMask]="true" [fluid]="true" [feedback]="false" />
+                                @if (passwordGroup.get('newPassword')?.invalid && passwordGroup.get('newPassword')?.touched) {
+                                    @if (passwordGroup.get('newPassword')?.errors?.['required']) {
+                                        <small class="text-red-500">New password is required</small>
+                                    }
+                                    @if (passwordGroup.get('newPassword')?.errors?.['minlength']) {
+                                        <small class="text-red-500">Password must be at least 6 characters</small>
+                                    }
+                                }
+                            </div>
+
+                            <div>
+                                <label for="confirmPassword" class="block text-surface-600 dark:text-surface-300 text-sm mb-2">Confirm New Password</label>
+                                <p-password id="confirmPassword" formControlName="confirmPassword" placeholder="Confirm new password" [toggleMask]="true" [fluid]="true" [feedback]="false" />
+                                @if (passwordGroup.get('confirmPassword')?.invalid && passwordGroup.get('confirmPassword')?.touched) {
+                                    <small class="text-red-500">Please confirm your password</small>
+                                }
+                                @if (passwordGroup.errors?.['passwordMismatch'] && passwordGroup.get('confirmPassword')?.touched) {
+                                    <small class="text-red-500">Passwords do not match</small>
+                                }
+                            </div>
+
+                            <div class="flex gap-2 justify-end">
+                                <p-button label="Cancel" severity="secondary" [outlined]="true" (onClick)="cancelPasswordChange()" />
+                                <p-button label="Change Password" (onClick)="onChangePassword()" [loading]="loading$()" [disabled]="passwordGroup.invalid" />
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-surface-200 dark:border-surface-700">
+                <p-button label="Cancel" severity="secondary" [outlined]="true" (onClick)="onCancel()" />
+                <p-button label="Submit" type="submit" [loading]="loading$()" />
+            </div>
+        </form>
+    </div>
+</p-card>
