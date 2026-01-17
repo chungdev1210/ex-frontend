@@ -10,7 +10,7 @@
         <div class="flex flex-col items-center gap-4">
             <div class="relative cursor-pointer group" (click)="fileInput.click()">
                 @if (currentUser()?.avatarUrl) {
-                    <img [src]="currentUser()?.avatarUrl" alt="Avatar" class="rounded-full object-cover border-4 border-primary" style="width: 120px; height: 120px" />
+                    <img [src]="getAvatarUrl()" alt="Avatar" class="rounded-full object-cover border-3 border-white" style="width: 120px; height: 120px" />
                 } @else {
                     <p-avatar [label]="getInitials()" shape="circle" [style]="{ width: '120px', height: '120px', fontSize: '4rem' }" />
                 }

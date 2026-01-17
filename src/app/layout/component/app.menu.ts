@@ -30,6 +30,16 @@ export class AppMenu {
                     {
                         label: 'Quản lý người dùng',
                         icon: 'pi pi-fw pi-user'
+                    },
+                    {
+                        label: 'Quản lý vai trò',
+                        icon: 'pi pi-fw pi-users',
+                        routerLink: ['/pages/roles']
+                    },
+                    {
+                        label: 'Quản lý quyền',
+                        icon: 'pi pi-fw pi-shield',
+                        routerLink: ['/pages/permissions']
                     }
                 ]
             }

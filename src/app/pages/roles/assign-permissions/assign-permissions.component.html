@@ -1,0 +1,41 @@
+<div class="flex flex-col gap-4">
+    <p-table [value]="permissions$()" [loading]="loading$()" [(selection)]="selectedPermissions" dataKey="id" [scrollable]="true" scrollHeight="500px">
+        <ng-template pTemplate="header">
+            <tr>
+                <th style="width: 3rem">
+                    <p-tableHeaderCheckbox />
+                </th>
+                <!-- <th style="width: 30%">Name</th> -->
+                <th style="width: 50%">Name</th>
+                <th style="width: 20%">Method</th>
+                <th style="width: 20%">Route Path</th>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-permission>
+            <tr>
+                <td>
+                    <p-tableCheckbox [value]="permission" />
+                </td>
+                <!-- <td>{{ permission.name }}</td> -->
+                <td>{{ permission.description || '-' }}</td>
+                <td>{{ permission.method || '-' }}</td>
+                <td>{{ permission.routePath || '-' }}</td>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td colspan="5" class="text-center">No permissions available.</td>
+            </tr>
+        </ng-template>
+    </p-table>
+
+    <div class="flex justify-between items-center mt-4">
+        <span class="text-sm text-gray-600">Selected: {{ selectedPermissions.length }} / {{ permissions$().length }}</span>
+        <div class="flex gap-2">
+            <p-button label="Cancel" severity="secondary" [outlined]="true" (onClick)="onCancel()" type="button" />
+            <p-button label="Save Permissions" (onClick)="onSave()" [disabled]="loading$()" />
+        </div>
+    </div>
+</div>

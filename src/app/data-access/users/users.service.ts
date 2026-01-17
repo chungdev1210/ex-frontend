@@ -42,7 +42,7 @@ export class UsersService {
 
     uploadAvatar(id: number, file: File): Observable<User> {
         const formData = new FormData();
-        formData.append('file', file);
+        formData.append('avatar', file);
         return this.http.post<User>(`${this.baseUrl}${API_CONFIG.endpoints.users.uploadAvatar(id)}`, formData);
     }
 

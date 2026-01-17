@@ -1,42 +1,33 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { API_CONFIG } from '../../core/config/api.config';
-import { Permission, CreatePermissionDto, UpdatePermissionDto, PermissionQueryParams, PagedResult } from '../../core/models';
+import { environment } from '../../../environments/environment';
+import { Permission, CreatePermissionDto, UpdatePermissionDto, ApiResponse } from '../../core/models';
 
 @Injectable({
     providedIn: 'root'
 })
 export class PermissionsService {
     private http = inject(HttpClient);
-    private baseUrl = API_CONFIG.baseUrl;
+    private apiUrl = `${environment.apiUrl}/permissions`;
 
-    getAll(params?: PermissionQueryParams): Observable<PagedResult<Permission>> {
-        let httpParams = new HttpParams();
-        if (params) {
-            Object.keys(params).forEach((key) => {
-                const value = params[key as keyof PermissionQueryParams];
-                if (value !== undefined && value !== null) {
-                    httpParams = httpParams.set(key, value.toString());
-                }
-            });
-        }
-        return this.http.get<PagedResult<Permission>>(`${this.baseUrl}${API_CONFIG.endpoints.permissions.base}`, { params: httpParams });
+    getAll(): Observable<ApiResponse<Permission[]>> {
+        return this.http.get<ApiResponse<Permission[]>>(this.apiUrl);
     }
 
-    getById(id: number): Observable<Permission> {
-        return this.http.get<Permission>(`${this.baseUrl}${API_CONFIG.endpoints.permissions.byId(id)}`);
+    getById(id: number): Observable<ApiResponse<Permission>> {
+        return this.http.get<ApiResponse<Permission>>(`${this.apiUrl}/${id}`);
     }
 
-    create(dto: CreatePermissionDto): Observable<Permission> {
-        return this.http.post<Permission>(`${this.baseUrl}${API_CONFIG.endpoints.permissions.base}`, dto);
+    create(dto: CreatePermissionDto): Observable<ApiResponse<Permission>> {
+        return this.http.post<ApiResponse<Permission>>(this.apiUrl, dto);
     }
 
-    update(id: number, dto: UpdatePermissionDto): Observable<Permission> {
-        return this.http.put<Permission>(`${this.baseUrl}${API_CONFIG.endpoints.permissions.byId(id)}`, dto);
+    update(id: number, dto: UpdatePermissionDto): Observable<ApiResponse<Permission>> {
+        return this.http.put<ApiResponse<Permission>>(`${this.apiUrl}/${id}`, dto);
     }
 
-    delete(id: number): Observable<void> {
-        return this.http.delete<void>(`${this.baseUrl}${API_CONFIG.endpoints.permissions.byId(id)}`);
+    delete(id: number): Observable<ApiResponse<void>> {
+        return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
     }
 }

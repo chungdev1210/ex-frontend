@@ -6,6 +6,7 @@ import { AvatarModule } from 'primeng/avatar';
 import { AppConfigurator } from './app.configurator';
 import { LayoutService } from '../service/layout.service';
 import { AuthFacade } from '../../data-access/auth/auth.facade';
+import { environment } from '../../../environments/environment';
 
 @Component({
     selector: 'app-topbar',
@@ -43,7 +44,7 @@ import { AuthFacade } from '../../data-access/auth/auth.facade';
                 <button type="button" class="layout-topbar-action" (click)="toggleDarkMode()">
                     <i [ngClass]="{ 'pi ': true, 'pi-moon': layoutService.isDarkTheme(), 'pi-sun': !layoutService.isDarkTheme() }"></i>
                 </button>
-                <div class="relative hidden">
+                <div class="relative">
                     <button
                         class="layout-topbar-action layout-topbar-action-highlight"
                         pStyleClass="@next"
@@ -68,7 +69,7 @@ import { AuthFacade } from '../../data-access/auth/auth.facade';
                     @if (currentUser()) {
                         <button type="button" class="layout-topbar-action" routerLink="/pages/profile">
                             @if (currentUser()?.avatarUrl) {
-                                <img [src]="currentUser()?.avatarUrl" alt="Avatar" class="w-8 h-8 rounded-full object-cover" />
+                                <img [src]="getAvatarUrl()" alt="Avatar" class="w-8 h-8 rounded-full object-cover" />
                             } @else {
                                 <p-avatar [label]="getInitials()" shape="circle" />
                             }
@@ -95,6 +96,13 @@ export class AppTopbar {
 
     currentUser = this.authFacade.currentUser;
     isAuthenticated = this.authFacade.isAuthenticated;
+    apiUrl = environment.apiUrl;
+
+    getAvatarUrl(): string {
+        const user = this.currentUser();
+        if (!user?.avatarUrl) return '';
+        return `${this.apiUrl}${user.avatarUrl}`;
+    }
 
     getInitials(): string {
         const user = this.currentUser();

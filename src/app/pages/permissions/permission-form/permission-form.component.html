@@ -1,0 +1,35 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()" class="h-[420px]">
+    <div class="flex flex-col gap-4 h-full">
+        <div class="flex flex-col gap-2">
+            <label for="description">Name *</label>
+            <input pInputText id="description" formControlName="description" />
+            @if (form.get('description')?.invalid && form.get('description')?.touched) {
+                <small class="text-red-500">Name is required</small>
+            }
+        </div>
+        <!-- <div class="flex flex-col gap-2">
+            <label for="description">Description</label>
+            <textarea pTextarea id="description" formControlName="description" rows="3"></textarea>
+        </div> -->
+
+        <div class="flex flex-col gap-2">
+            <label for="routePath">Route Path</label>
+            <input pInputText id="routePath" formControlName="routePath" />
+        </div>
+
+        <div class="flex flex-col gap-2">
+            <label for="method">HTTP Method</label>
+            <p-select id="method" formControlName="method" [options]="httpMethods" placeholder="Select method" [showClear]="true" optionLabel="label" optionValue="value" />
+        </div>
+
+        <div class="flex items-center gap-2">
+            <p-toggleSwitch id="isActive" formControlName="isActive" />
+            <label for="isActive">Active</label>
+        </div>
+
+        <div class="flex flex-1 justify-end items-end gap-2 mt-4">
+            <p-button label="Cancel" severity="secondary" [outlined]="true" (onClick)="onCancel()" type="button" />
+            <p-button label="Save" type="submit" [disabled]="form.invalid" />
+        </div>
+    </div>
+</form>

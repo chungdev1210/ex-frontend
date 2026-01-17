@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, tap, catchError, throwError } from 'rxjs';
+import { Observable, tap, catchError, throwError, map } from 'rxjs';
 import { PermissionsService } from './permissions.service';
 import { PermissionsStore } from './permissions.store';
-import { Permission, CreatePermissionDto, UpdatePermissionDto, PermissionQueryParams } from '../../core/models';
+import { Permission, CreatePermissionDto, UpdatePermissionDto } from '../../core/models';
 
 @Injectable({
     providedIn: 'root'
@@ -16,14 +16,13 @@ export class PermissionsFacade {
     selectedPermission$ = this.permissionsStore.selectedPermission;
     loading$ = this.permissionsStore.loading;
     error$ = this.permissionsStore.error;
-    totalCount$ = this.permissionsStore.totalCount;
 
     // Actions
-    loadPermissions(params?: PermissionQueryParams): void {
+    loadPermissions(): void {
         this.permissionsStore.setLoading(true);
-        this.permissionsService.getAll(params).subscribe({
-            next: (result) => {
-                this.permissionsStore.setPermissions(result.items, result.totalCount);
+        this.permissionsService.getAll().subscribe({
+            next: (response) => {
+                this.permissionsStore.setPermissions(response.results);
             },
             error: (error) => {
                 this.permissionsStore.setError(error.message || 'Failed to load permissions');
@@ -34,8 +33,8 @@ export class PermissionsFacade {
     loadPermissionById(id: number): void {
         this.permissionsStore.setLoading(true);
         this.permissionsService.getById(id).subscribe({
-            next: (permission) => {
-                this.permissionsStore.setSelectedPermission(permission);
+            next: (response) => {
+                this.permissionsStore.setSelectedPermission(response.results);
                 this.permissionsStore.setLoading(false);
             },
             error: (error) => {
@@ -44,31 +43,33 @@ export class PermissionsFacade {
         });
     }
 
-    createPermission(dto: CreatePermissionDto): Observable<Permission> {
+    createPermission(dto: CreatePermissionDto): Observable<void> {
         this.permissionsStore.setLoading(true);
         return this.permissionsService.create(dto).pipe(
-            tap((permission) => {
-                this.permissionsStore.addPermission(permission);
+            tap((response) => {
+                this.permissionsStore.addPermission(response.results);
                 this.permissionsStore.setLoading(false);
             }),
             catchError((error) => {
                 this.permissionsStore.setError(error.message || 'Failed to create permission');
                 return throwError(() => error);
-            })
+            }),
+            map(() => void 0)
         );
     }
 
-    updatePermission(id: number, dto: UpdatePermissionDto): Observable<Permission> {
+    updatePermission(id: number, dto: UpdatePermissionDto): Observable<void> {
         this.permissionsStore.setLoading(true);
         return this.permissionsService.update(id, dto).pipe(
-            tap((permission) => {
-                this.permissionsStore.updatePermission(permission);
+            tap((response) => {
+                this.permissionsStore.updatePermission(response.results);
                 this.permissionsStore.setLoading(false);
             }),
             catchError((error) => {
                 this.permissionsStore.setError(error.message || 'Failed to update permission');
                 return throwError(() => error);
-            })
+            }),
+            map(() => void 0)
         );
     }
 
@@ -82,7 +83,8 @@ export class PermissionsFacade {
             catchError((error) => {
                 this.permissionsStore.setError(error.message || 'Failed to delete permission');
                 return throwError(() => error);
-            })
+            }),
+            map(() => void 0)
         );
     }
 

@@ -1,50 +1,41 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { API_CONFIG } from '../../core/config/api.config';
-import { Role, CreateRoleDto, UpdateRoleDto, RoleQueryParams, AssignPermissionsDto, Permission, PagedResult } from '../../core/models';
+import { environment } from '../../../environments/environment';
+import { Role, CreateRoleDto, UpdateRoleDto, AssignPermissionsDto, Permission, ApiResponse } from '../../core/models';
 
 @Injectable({
     providedIn: 'root'
 })
 export class RolesService {
     private http = inject(HttpClient);
-    private baseUrl = API_CONFIG.baseUrl;
+    private apiUrl = `${environment.apiUrl}/roles`;
 
-    getAll(params?: RoleQueryParams): Observable<PagedResult<Role>> {
-        let httpParams = new HttpParams();
-        if (params) {
-            Object.keys(params).forEach((key) => {
-                const value = params[key as keyof RoleQueryParams];
-                if (value !== undefined && value !== null) {
-                    httpParams = httpParams.set(key, value.toString());
-                }
-            });
-        }
-        return this.http.get<PagedResult<Role>>(`${this.baseUrl}${API_CONFIG.endpoints.roles.base}`, { params: httpParams });
+    getAll(): Observable<ApiResponse<Role[]>> {
+        return this.http.get<ApiResponse<Role[]>>(this.apiUrl);
     }
 
-    getById(id: number): Observable<Role> {
-        return this.http.get<Role>(`${this.baseUrl}${API_CONFIG.endpoints.roles.byId(id)}`);
+    getById(id: number): Observable<ApiResponse<Role>> {
+        return this.http.get<ApiResponse<Role>>(`${this.apiUrl}/${id}`);
     }
 
-    create(dto: CreateRoleDto): Observable<Role> {
-        return this.http.post<Role>(`${this.baseUrl}${API_CONFIG.endpoints.roles.base}`, dto);
+    create(dto: CreateRoleDto): Observable<ApiResponse<Role>> {
+        return this.http.post<ApiResponse<Role>>(this.apiUrl, dto);
     }
 
-    update(id: number, dto: UpdateRoleDto): Observable<Role> {
-        return this.http.put<Role>(`${this.baseUrl}${API_CONFIG.endpoints.roles.byId(id)}`, dto);
+    update(id: number, dto: UpdateRoleDto): Observable<ApiResponse<Role>> {
+        return this.http.put<ApiResponse<Role>>(`${this.apiUrl}/${id}`, dto);
     }
 
-    delete(id: number): Observable<void> {
-        return this.http.delete<void>(`${this.baseUrl}${API_CONFIG.endpoints.roles.byId(id)}`);
+    delete(id: number): Observable<ApiResponse<void>> {
+        return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
     }
 
-    getPermissions(id: number): Observable<Permission[]> {
-        return this.http.get<Permission[]>(`${this.baseUrl}${API_CONFIG.endpoints.roles.permissions(id)}`);
+    getPermissions(id: number): Observable<ApiResponse<Permission[]>> {
+        return this.http.get<ApiResponse<Permission[]>>(`${this.apiUrl}/${id}/permissions`);
     }
 
-    assignPermissions(id: number, dto: AssignPermissionsDto): Observable<void> {
-        return this.http.put<void>(`${this.baseUrl}${API_CONFIG.endpoints.roles.assignPermissions(id)}`, dto);
+    assignPermissions(id: number, dto: AssignPermissionsDto): Observable<ApiResponse<void>> {
+        return this.http.put<ApiResponse<void>>(`${this.apiUrl}/${id}/permissions`, dto);
     }
 }

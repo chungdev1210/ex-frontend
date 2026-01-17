@@ -1,85 +1,49 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { Permission } from '../../core/models';
 
-interface PermissionsState {
-    permissions: Permission[];
-    selectedPermission: Permission | null;
-    loading: boolean;
-    error: string | null;
-    totalCount: number;
-}
-
-const initialState: PermissionsState = {
-    permissions: [],
-    selectedPermission: null,
-    loading: false,
-    error: null,
-    totalCount: 0
-};
-
 @Injectable({
     providedIn: 'root'
 })
 export class PermissionsStore {
-    // State
-    private state = signal<PermissionsState>(initialState);
+    private _permissions = signal<Permission[]>([]);
+    private _selectedPermission = signal<Permission | null>(null);
+    private _loading = signal<boolean>(false);
+    private _error = signal<string | null>(null);
 
     // Selectors
-    permissions = computed(() => this.state().permissions);
-    selectedPermission = computed(() => this.state().selectedPermission);
-    loading = computed(() => this.state().loading);
-    error = computed(() => this.state().error);
-    totalCount = computed(() => this.state().totalCount);
+    permissions = this._permissions.asReadonly();
+    selectedPermission = this._selectedPermission.asReadonly();
+    loading = this._loading.asReadonly();
+    error = this._error.asReadonly();
 
-    // Mutations
-    setLoading(loading: boolean): void {
-        this.state.update((state) => ({ ...state, loading }));
-    }
-
-    setError(error: string | null): void {
-        this.state.update((state) => ({ ...state, error, loading: false }));
-    }
-
-    setPermissions(permissions: Permission[], totalCount: number): void {
-        this.state.update((state) => ({
-            ...state,
-            permissions,
-            totalCount,
-            loading: false,
-            error: null
-        }));
+    // Actions
+    setPermissions(permissions: Permission[]): void {
+        this._permissions.set(permissions);
+        this._loading.set(false);
     }
 
     setSelectedPermission(permission: Permission | null): void {
-        this.state.update((state) => ({ ...state, selectedPermission: permission }));
+        this._selectedPermission.set(permission);
     }
 
     addPermission(permission: Permission): void {
-        this.state.update((state) => ({
-            ...state,
-            permissions: [...state.permissions, permission],
-            totalCount: state.totalCount + 1
-        }));
+        this._permissions.update((permissions) => [...permissions, permission]);
     }
 
-    updatePermission(permission: Permission): void {
-        this.state.update((state) => ({
-            ...state,
-            permissions: state.permissions.map((p) => (p.id === permission.id ? permission : p)),
-            selectedPermission: state.selectedPermission?.id === permission.id ? permission : state.selectedPermission
-        }));
+    updatePermission(updated: Permission): void {
+        this._permissions.update((permissions) => permissions.map((p) => (p.id === updated.id ? updated : p)));
     }
 
     removePermission(id: number): void {
-        this.state.update((state) => ({
-            ...state,
-            permissions: state.permissions.filter((p) => p.id !== id),
-            totalCount: state.totalCount - 1,
-            selectedPermission: state.selectedPermission?.id === id ? null : state.selectedPermission
-        }));
+        this._permissions.update((permissions) => permissions.filter((p) => p.id !== id));
     }
 
-    reset(): void {
-        this.state.set(initialState);
+    setLoading(loading: boolean): void {
+        this._loading.set(loading);
+    }
+
+    setError(error: string | null): void {
+        this._error.set(error);
+        this._loading.set(false);
     }
 }

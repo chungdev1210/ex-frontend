@@ -1,92 +1,55 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { Role, Permission } from '../../core/models';
-
-interface RolesState {
-    roles: Role[];
-    selectedRole: Role | null;
-    rolePermissions: Permission[];
-    loading: boolean;
-    error: string | null;
-    totalCount: number;
-}
-
-const initialState: RolesState = {
-    roles: [],
-    selectedRole: null,
-    rolePermissions: [],
-    loading: false,
-    error: null,
-    totalCount: 0
-};
 
 @Injectable({
     providedIn: 'root'
 })
 export class RolesStore {
-    // State
-    private state = signal<RolesState>(initialState);
+    private _roles = signal<Role[]>([]);
+    private _selectedRole = signal<Role | null>(null);
+    private _rolePermissions = signal<Permission[]>([]);
+    private _loading = signal<boolean>(false);
+    private _error = signal<string | null>(null);
 
     // Selectors
-    roles = computed(() => this.state().roles);
-    selectedRole = computed(() => this.state().selectedRole);
-    rolePermissions = computed(() => this.state().rolePermissions);
-    loading = computed(() => this.state().loading);
-    error = computed(() => this.state().error);
-    totalCount = computed(() => this.state().totalCount);
+    roles = this._roles.asReadonly();
+    selectedRole = this._selectedRole.asReadonly();
+    rolePermissions = this._rolePermissions.asReadonly();
+    loading = this._loading.asReadonly();
+    error = this._error.asReadonly();
 
-    // Mutations
-    setLoading(loading: boolean): void {
-        this.state.update((state) => ({ ...state, loading }));
-    }
-
-    setError(error: string | null): void {
-        this.state.update((state) => ({ ...state, error, loading: false }));
-    }
-
-    setRoles(roles: Role[], totalCount: number): void {
-        this.state.update((state) => ({
-            ...state,
-            roles,
-            totalCount,
-            loading: false,
-            error: null
-        }));
+    // Actions
+    setRoles(roles: Role[]): void {
+        this._roles.set(roles);
+        this._loading.set(false);
     }
 
     setSelectedRole(role: Role | null): void {
-        this.state.update((state) => ({ ...state, selectedRole: role }));
+        this._selectedRole.set(role);
     }
 
     setRolePermissions(permissions: Permission[]): void {
-        this.state.update((state) => ({ ...state, rolePermissions: permissions }));
+        this._rolePermissions.set(permissions);
     }
 
     addRole(role: Role): void {
-        this.state.update((state) => ({
-            ...state,
-            roles: [...state.roles, role],
-            totalCount: state.totalCount + 1
-        }));
+        this._roles.update((roles) => [...roles, role]);
     }
 
-    updateRole(role: Role): void {
-        this.state.update((state) => ({
-            ...state,
-            roles: state.roles.map((r) => (r.id === role.id ? role : r)),
-            selectedRole: state.selectedRole?.id === role.id ? role : state.selectedRole
-        }));
+    updateRole(updated: Role): void {
+        this._roles.update((roles) => roles.map((r) => (r.id === updated.id ? updated : r)));
     }
 
     removeRole(id: number): void {
-        this.state.update((state) => ({
-            ...state,
-            roles: state.roles.filter((r) => r.id !== id),
-            totalCount: state.totalCount - 1,
-            selectedRole: state.selectedRole?.id === id ? null : state.selectedRole
-        }));
+        this._roles.update((roles) => roles.filter((r) => r.id !== id));
     }
 
-    reset(): void {
-        this.state.set(initialState);
+    setLoading(loading: boolean): void {
+        this._loading.set(loading);
+    }
+
+    setError(error: string | null): void {
+        this._error.set(error);
+        this._loading.set(false);
     }
 }

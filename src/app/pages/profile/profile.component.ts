@@ -11,6 +11,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { AuthFacade } from '../../data-access/auth/auth.facade';
 import { UsersFacade } from '../../data-access/users/users.facade';
+import { environment } from '../../../environments/environment';
 
 @Component({
     selector: 'app-profile',
@@ -28,6 +29,7 @@ export class ProfileComponent implements OnInit {
     currentUser = this.authFacade.currentUser;
     loading$ = this.usersFacade.loading$;
     showPasswordForm = signal(false);
+    apiUrl = environment.apiUrl;
 
     profileForm: FormGroup = this.fb.group({
         userName: [{ value: '', disabled: true }],
@@ -66,6 +68,12 @@ export class ProfileComponent implements OnInit {
                 fullName: user.fullName || ''
             });
         }
+    }
+
+    getAvatarUrl(): string {
+        const user = this.currentUser();
+        if (!user?.avatarUrl) return '';
+        return `${this.apiUrl}${user.avatarUrl}`;
     }
 
     getInitials(): string {

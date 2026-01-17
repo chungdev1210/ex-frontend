@@ -26,10 +26,13 @@ interface MenuChangeEvent {
     providedIn: 'root'
 })
 export class LayoutService {
+    private readonly CONFIG_STORAGE_KEY = 'layout_config';
+    private readonly CONFIG_VERSION = '1.0'; // Tăng version này để force reset config
+
     _config: layoutConfig = {
         preset: 'Aura',
-        primary: 'blue',
-        surface: 'slate',
+        primary: 'noir',
+        surface: 'gray',
         darkTheme: true,
         menuMode: 'static'
     };
@@ -42,7 +45,7 @@ export class LayoutService {
         menuHoverActive: false
     };
 
-    layoutConfig = signal<layoutConfig>(this._config);
+    layoutConfig = signal<layoutConfig>(this.loadConfig());
 
     layoutState = signal<LayoutState>(this._state);
 
@@ -83,6 +86,7 @@ export class LayoutService {
             const config = this.layoutConfig();
             if (config) {
                 this.onConfigUpdate();
+                this.saveConfig(config);
             }
         });
 
@@ -96,6 +100,36 @@ export class LayoutService {
 
             this.handleDarkModeTransition(config);
         });
+    }
+
+    private loadConfig(): layoutConfig {
+        try {
+            const savedConfig = localStorage.getItem(this.CONFIG_STORAGE_KEY);
+            const savedVersion = localStorage.getItem(`${this.CONFIG_STORAGE_KEY}_version`);
+
+            // Nếu version khác, reset về default
+            if (savedVersion !== this.CONFIG_VERSION) {
+                localStorage.removeItem(this.CONFIG_STORAGE_KEY);
+                localStorage.setItem(`${this.CONFIG_STORAGE_KEY}_version`, this.CONFIG_VERSION);
+                return this._config;
+            }
+
+            if (savedConfig) {
+                return { ...this._config, ...JSON.parse(savedConfig) };
+            }
+        } catch (error) {
+            console.error('Error loading layout config:', error);
+        }
+        return this._config;
+    }
+
+    private saveConfig(config: layoutConfig): void {
+        try {
+            localStorage.setItem(this.CONFIG_STORAGE_KEY, JSON.stringify(config));
+            localStorage.setItem(`${this.CONFIG_STORAGE_KEY}_version`, this.CONFIG_VERSION);
+        } catch (error) {
+            console.error('Error saving layout config:', error);
+        }
     }
 
     private handleDarkModeTransition(config: layoutConfig): void {
